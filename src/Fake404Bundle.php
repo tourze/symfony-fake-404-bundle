@@ -1,6 +1,6 @@
 <?php
 
-namespace Fake404Bundle;
+namespace Tourze\Fake404Bundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
