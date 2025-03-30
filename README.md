@@ -1,0 +1,1 @@
+# symfony-fake-404-bundle
