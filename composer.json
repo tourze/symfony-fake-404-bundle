@@ -21,6 +21,11 @@
       "Tourze\\Fake404Bundle\\": "src"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Tourze\\Fake404Bundle\\Tests\\": "tests"
+    }
+  },
   "require-dev": {
     "phpunit/phpunit": "^10.0",
     "phpstan/phpstan": "^2.1"
