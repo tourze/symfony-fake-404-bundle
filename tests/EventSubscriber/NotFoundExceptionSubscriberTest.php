@@ -29,83 +29,76 @@ class NotFoundExceptionSubscriberTest extends TestCase
         $this->request = new Request();
     }
 
-    public function testGetSubscribedEvents(): void
+    public function test_getSubscribedEvents_returnsCorrectEventConfiguration(): void
     {
+        // Act
         $events = NotFoundExceptionSubscriber::getSubscribedEvents();
 
+        // Assert
         $this->assertArrayHasKey(KernelEvents::EXCEPTION, $events);
         $this->assertEquals(['onKernelException', 0], $events[KernelEvents::EXCEPTION]);
     }
 
-    public function testOnKernelExceptionWithNotFoundHttpException(): void
+    public function test_onKernelException_withNotFoundHttpException_setsCustomResponse(): void
     {
-        // 创建实际的 NotFoundHttpException 异常
+        // Arrange
         $exception = new NotFoundHttpException('Not Found');
-
-        // 创建实际的 ExceptionEvent 对象
         $event = new ExceptionEvent(
             $this->kernel,
             $this->request,
             HttpKernelInterface::MAIN_REQUEST,
             $exception
         );
-
-        // 模拟服务返回响应
         $response = new Response('404 error page', Response::HTTP_NOT_FOUND);
         $this->fake404Service->expects($this->once())
             ->method('getRandomErrorPage')
             ->willReturn($response);
 
+        // Act
         $this->subscriber->onKernelException($event);
 
-        // 验证是否已设置响应
+        // Assert
         $this->assertSame($response, $event->getResponse());
     }
 
-    public function testOnKernelExceptionWithOtherException(): void
+    public function test_onKernelException_withOtherException_doesNotSetResponse(): void
     {
-        // 创建非 NotFoundHttpException 异常
+        // Arrange
         $exception = new \Exception('Other exception');
-
-        // 创建实际的 ExceptionEvent 对象
         $event = new ExceptionEvent(
             $this->kernel,
             $this->request,
             HttpKernelInterface::MAIN_REQUEST,
             $exception
         );
-
-        // 确认不会调用服务
         $this->fake404Service->expects($this->never())
             ->method('getRandomErrorPage');
 
+        // Act
         $this->subscriber->onKernelException($event);
 
-        // 验证未设置响应
+        // Assert
         $this->assertNull($event->getResponse());
     }
 
-    public function testOnKernelExceptionWithNoResponseFromService(): void
+    public function test_onKernelException_withNoResponseFromService_doesNotSetResponse(): void
     {
-        // 创建 NotFoundHttpException 异常
+        // Arrange
         $exception = new NotFoundHttpException('Not Found');
-
-        // 创建实际的 ExceptionEvent 对象
         $event = new ExceptionEvent(
             $this->kernel,
             $this->request,
             HttpKernelInterface::MAIN_REQUEST,
             $exception
         );
-
-        // 模拟服务不返回响应
         $this->fake404Service->expects($this->once())
             ->method('getRandomErrorPage')
             ->willReturn(null);
 
+        // Act
         $this->subscriber->onKernelException($event);
 
-        // 验证未设置响应
+        // Assert
         $this->assertNull($event->getResponse());
     }
 }

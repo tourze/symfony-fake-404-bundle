@@ -19,16 +19,17 @@ class Fake404ExtensionTest extends TestCase
         $this->container = new ContainerBuilder();
     }
 
-    public function testLoad(): void
+    public function test_load_registersServicesAndParameters(): void
     {
+        // Act
         $this->extension->load([], $this->container);
 
-        // 验证模板目录参数是否已设置
+        // Assert - 验证模板目录参数是否已设置
         $this->assertTrue($this->container->hasParameter('fake404.templates_dir'));
         $templatesDir = $this->container->getParameter('fake404.templates_dir');
         $this->assertStringEndsWith('Resources/views/pages', $templatesDir);
 
-        // 验证服务定义是否已注册
+        // Assert - 验证服务定义是否已注册
         $this->assertTrue($this->container->hasDefinition(Fake404Service::class));
         $this->assertTrue($this->container->hasDefinition(NotFoundExceptionSubscriber::class));
     }

@@ -21,33 +21,70 @@ class Fake404ServiceTest extends TestCase
         $this->service = new Fake404Service($this->twig, $this->templatesDir);
     }
 
-    public function testGetRandomErrorPageWithTemplates(): void
+    public function test_getRandomErrorPage_withAvailableTemplates_returnsValidResponse(): void
     {
-        // 准备模拟 twig 渲染结果
+        // Arrange
+        $expectedContent = '<html><body>404 Error Page</body></html>';
         $this->twig->expects($this->once())
             ->method('render')
-            ->willReturn('<html><body>404 Error Page</body></html>');
+            ->willReturn($expectedContent);
 
+        // Act
         $response = $this->service->getRandomErrorPage();
 
+        // Assert
         $this->assertInstanceOf(Response::class, $response);
         $this->assertEquals(Response::HTTP_NOT_FOUND, $response->getStatusCode());
-        $this->assertEquals('<html><body>404 Error Page</body></html>', $response->getContent());
+        $this->assertEquals($expectedContent, $response->getContent());
     }
 
-    public function testGetRandomErrorPageWithNoTemplates(): void
+    public function test_getRandomErrorPage_withNoTemplatesAvailable_returnsNull(): void
     {
-        // 创建一个带有空模板目录的服务实例
+        // Arrange
         $emptyDir = sys_get_temp_dir() . '/empty_templates_' . uniqid();
         if (!is_dir($emptyDir)) {
             mkdir($emptyDir);
         }
-
         $service = new Fake404Service($this->twig, $emptyDir);
 
-        $this->assertNull($service->getRandomErrorPage());
+        // Act
+        $result = $service->getRandomErrorPage();
 
-        // 清理测试目录
+        // Assert
+        $this->assertNull($result);
+
+        // Cleanup
         rmdir($emptyDir);
+    }
+
+    public function test_getRandomErrorPage_withTwigRenderException_throwsException(): void
+    {
+        // Arrange
+        $this->twig->expects($this->once())
+            ->method('render')
+            ->willThrowException(new \Exception('Twig render error'));
+
+        // Assert & Act
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Twig render error');
+        $this->service->getRandomErrorPage();
+    }
+
+    public function test_constructor_loadsTemplatesFromDirectory(): void
+    {
+        // Arrange
+        $mockTwig = $this->createMock(Environment::class);
+        $templatesDir = __DIR__ . '/../../src/Resources/views/pages';
+
+        // Act
+        $service = new Fake404Service($mockTwig, $templatesDir);
+
+        // Assert - 通过调用方法验证模板已加载
+        $mockTwig->expects($this->once())
+            ->method('render')
+            ->willReturn('test content');
+
+        $response = $service->getRandomErrorPage();
+        $this->assertNotNull($response);
     }
 }
