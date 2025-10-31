@@ -2,12 +2,15 @@
 
 namespace Tourze\Fake404Bundle\Service;
 
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpFoundation\Response;
 use Twig\Environment;
 
+#[Autoconfigure(public: true)]
 class Fake404Service
 {
+    /** @var string[] */
     private array $templates = [];
 
     public function __construct(
@@ -19,6 +22,10 @@ class Fake404Service
 
     private function loadTemplates(): void
     {
+        if (!is_dir($this->templatesDir)) {
+            return;
+        }
+
         $finder = new Finder();
         $finder->files()->in($this->templatesDir)->name('*.html.twig');
 
@@ -29,7 +36,7 @@ class Fake404Service
 
     public function getRandomErrorPage(): ?Response
     {
-        if (empty($this->templates)) {
+        if ([] === $this->templates) {
             return null;
         }
 

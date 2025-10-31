@@ -1,31 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tourze\Fake404Bundle\Tests;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Tourze\Fake404Bundle\Fake404Bundle;
+use Tourze\PHPUnitSymfonyKernelTest\AbstractBundleTestCase;
 
-class Fake404BundleTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(Fake404Bundle::class)]
+#[RunTestsInSeparateProcesses]
+final class Fake404BundleTest extends AbstractBundleTestCase
 {
-    public function test_bundle_canBeInstantiated(): void
-    {
-        // Act
-        $bundle = new Fake404Bundle();
-
-        // Assert
-        $this->assertInstanceOf(Fake404Bundle::class, $bundle);
-    }
-
-    public function test_getPath_returnsCorrectPath(): void
-    {
-        // Arrange
-        $bundle = new Fake404Bundle();
-        $expectedPath = dirname(__DIR__) . '/src';
-
-        // Act
-        $actualPath = $bundle->getPath();
-
-        // Assert
-        $this->assertEquals($expectedPath, $actualPath);
-    }
 }

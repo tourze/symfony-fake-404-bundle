@@ -2,35 +2,61 @@
 
 namespace Tourze\Fake404Bundle\Tests\DependencyInjection;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Tourze\Fake404Bundle\DependencyInjection\Fake404Extension;
-use Tourze\Fake404Bundle\EventSubscriber\NotFoundExceptionSubscriber;
-use Tourze\Fake404Bundle\Service\Fake404Service;
+use Tourze\PHPUnitSymfonyUnitTest\AbstractDependencyInjectionExtensionTestCase;
 
-class Fake404ExtensionTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(Fake404Extension::class)]
+final class Fake404ExtensionTest extends AbstractDependencyInjectionExtensionTestCase
 {
     private Fake404Extension $extension;
+
     private ContainerBuilder $container;
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->extension = new Fake404Extension();
         $this->container = new ContainerBuilder();
+
+        // Set required parameters for AutoExtension
+        $this->container->setParameter('kernel.environment', 'test');
+        $this->container->setParameter('kernel.debug', true);
+        $this->container->setParameter('kernel.cache_dir', sys_get_temp_dir());
+        $this->container->setParameter('kernel.logs_dir', sys_get_temp_dir());
+        $this->container->setParameter('kernel.project_dir', __DIR__ . '/../../');
     }
 
-    public function test_load_registersServicesAndParameters(): void
+    public function testPrependSetsTemplatesDirParameter(): void
     {
         // Act
-        $this->extension->load([], $this->container);
+        $this->extension->prepend($this->container);
 
-        // Assert - 验证模板目录参数是否已设置
+        // Assert
         $this->assertTrue($this->container->hasParameter('fake404.templates_dir'));
-        $templatesDir = $this->container->getParameter('fake404.templates_dir');
-        $this->assertStringEndsWith('Resources/views/pages', $templatesDir);
+        $expectedPath = realpath(__DIR__ . '/../../src/DependencyInjection/../Resources/views/pages');
+        $parameterValue = $this->container->getParameter('fake404.templates_dir');
+        $this->assertIsString($parameterValue);
+        $actualPath = realpath($parameterValue);
+        $this->assertSame($expectedPath, $actualPath);
+    }
 
-        // Assert - 验证服务定义是否已注册
-        $this->assertTrue($this->container->hasDefinition(Fake404Service::class));
-        $this->assertTrue($this->container->hasDefinition(NotFoundExceptionSubscriber::class));
+    public function testGetConfigDirReturnsCorrectPath(): void
+    {
+        // Act - Use reflection to access protected method
+        $reflection = new \ReflectionClass($this->extension);
+        $method = $reflection->getMethod('getConfigDir');
+        $method->setAccessible(true);
+        $configDir = $method->invoke($this->extension);
+
+        // Assert
+        $expectedPath = realpath(__DIR__ . '/../../src/DependencyInjection/../Resources/config');
+        $actualPath = realpath($configDir);
+        $this->assertSame($expectedPath, $actualPath);
     }
 }
