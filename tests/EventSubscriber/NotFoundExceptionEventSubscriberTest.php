@@ -13,8 +13,6 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use Tourze\Fake404Bundle\EventSubscriber\NotFoundExceptionEventSubscriber;
 use Tourze\Fake404Bundle\Service\Fake404Service;
 use Tourze\PHPUnitSymfonyKernelTest\AbstractEventSubscriberTestCase;
-use Twig\Environment;
-use Twig\Loader\ArrayLoader;
 
 /**
  * @internal
@@ -64,31 +62,11 @@ final class NotFoundExceptionEventSubscriberTest extends AbstractEventSubscriber
         );
         $response = new Response('404 error page', Response::HTTP_NOT_FOUND);
 
-        // 创建模拟依赖
-        $mockTwig = new class extends Environment {
-            public function __construct()
-            {
-                $loader = new ArrayLoader([]);
-                parent::__construct($loader);
-            }
-        };
-        $templatesDir = '/tmp/fake404_templates';
-
-        // 创建模拟服务并设置到容器中
-        $this->fake404Service = new class($response, $mockTwig, $templatesDir) extends Fake404Service {
-            private Response $responseToReturn;
-
-            public function __construct(Response $responseToReturn, Environment $twig, string $templatesDir)
-            {
-                parent::__construct($twig, $templatesDir);
-                $this->responseToReturn = $responseToReturn;
-            }
-
-            public function getRandomErrorPage(): Response
-            {
-                return $this->responseToReturn;
-            }
-        };
+        // 创建 Mock 服务并设置到容器中
+        $this->fake404Service = $this->createMock(Fake404Service::class);
+        $this->fake404Service
+            ->method('getRandomErrorPage')
+            ->willReturn($response);
         self::getContainer()->set(Fake404Service::class, $this->fake404Service);
 
         // Act
@@ -116,28 +94,11 @@ final class NotFoundExceptionEventSubscriberTest extends AbstractEventSubscriber
             $exception
         );
 
-        // 创建模拟依赖
-        $mockTwig = new class extends Environment {
-            public function __construct()
-            {
-                $loader = new ArrayLoader([]);
-                parent::__construct($loader);
-            }
-        };
-        $templatesDir = '/tmp/fake404_templates';
-
-        // 创建模拟服务并设置到容器中
-        $this->fake404Service = new class($mockTwig, $templatesDir) extends Fake404Service {
-            public function __construct(Environment $twig, string $templatesDir)
-            {
-                parent::__construct($twig, $templatesDir);
-            }
-
-            public function getRandomErrorPage(): ?Response
-            {
-                return null;
-            }
-        };
+        // 创建 Mock 服务并设置到容器中
+        $this->fake404Service = $this->createMock(Fake404Service::class);
+        $this->fake404Service
+            ->method('getRandomErrorPage')
+            ->willReturn(null);
         self::getContainer()->set(Fake404Service::class, $this->fake404Service);
 
         // Act
@@ -165,28 +126,11 @@ final class NotFoundExceptionEventSubscriberTest extends AbstractEventSubscriber
             $exception
         );
 
-        // 创建模拟依赖
-        $mockTwig = new class extends Environment {
-            public function __construct()
-            {
-                $loader = new ArrayLoader([]);
-                parent::__construct($loader);
-            }
-        };
-        $templatesDir = '/tmp/fake404_templates';
-
-        // 创建模拟服务并设置到容器中
-        $this->fake404Service = new class($mockTwig, $templatesDir) extends Fake404Service {
-            public function __construct(Environment $twig, string $templatesDir)
-            {
-                parent::__construct($twig, $templatesDir);
-            }
-
-            public function getRandomErrorPage(): ?Response
-            {
-                return null;
-            }
-        };
+        // 创建 Mock 服务并设置到容器中
+        $this->fake404Service = $this->createMock(Fake404Service::class);
+        $this->fake404Service
+            ->method('getRandomErrorPage')
+            ->willReturn(null);
         self::getContainer()->set(Fake404Service::class, $this->fake404Service);
 
         // Act

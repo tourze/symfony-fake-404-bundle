@@ -55,6 +55,7 @@ final class Fake404ExtensionTest extends AbstractDependencyInjectionExtensionTes
         $configDir = $method->invoke($this->extension);
 
         // Assert
+        $this->assertIsString($configDir);
         $expectedPath = realpath(__DIR__ . '/../../src/DependencyInjection/../Resources/config');
         $actualPath = realpath($configDir);
         $this->assertSame($expectedPath, $actualPath);

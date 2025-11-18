@@ -35,12 +35,23 @@ readonly class NotFoundExceptionEventSubscriber implements EventSubscriberInterf
         }
 
         if (filter_var($_ENV['FAKE_404_LOG_REQUEST'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+            $request = $event->getRequest();
+            $content = $request->getContent();
+            $envMaxLength = $_ENV['FAKE_404_MAX_CONTENT_LENGTH'] ?? '1024';
+            $maxContentLength = is_numeric($envMaxLength) ? (int) $envMaxLength : 1024;
+
+            // 截断过长的请求内容
+            $truncatedContent = mb_strlen($content) > $maxContentLength
+                ? mb_substr($content, 0, $maxContentLength) . '...[truncated]'
+                : $content;
+
             $this->logger->info('捕捉到404异常', [
                 'exception' => $exception,
-                'requestHeaders' => $event->getRequest()->headers->all(),
-                'requestContent' => $event->getRequest()->getContent(),
-                'requestUri' => $event->getRequest()->getUri(),
-                'requestMethod' => $event->getRequest()->getMethod(),
+                'requestHeaders' => $request->headers->all(),
+                'requestContent' => $truncatedContent,
+                'requestContentLength' => mb_strlen($content),
+                'requestUri' => $request->getUri(),
+                'requestMethod' => $request->getMethod(),
             ]);
         }
 
