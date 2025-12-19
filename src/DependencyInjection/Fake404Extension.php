@@ -5,7 +5,7 @@ namespace Tourze\Fake404Bundle\DependencyInjection;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Tourze\SymfonyDependencyServiceLoader\AutoExtension;
 
-class Fake404Extension extends AutoExtension
+final class Fake404Extension extends AutoExtension
 {
     protected function getConfigDir(): string
     {
